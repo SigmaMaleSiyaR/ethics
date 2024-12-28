@@ -1,57 +1,32 @@
-# Use an official Python runtime as the base image
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set environment variables to prevent Python from generating pyc files and enable unbuffered logs
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    curl \
-    unzip \
+    chromium \
     libnss3 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm-dev \
-    libgtk-3-0 \
-    libasound2 \
+    libgdk-pixbuf2.0-0 \
     libxss1 \
-    fonts-liberation \
-    xdg-utils \
+    libappindicator3-1 \
+    wget \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Add Google Chrome's signing key and repository
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+# Install ChromeDriver manually (download the latest version)
+RUN CHROMEDRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && wgethttps://storage.googleapis.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip \
+    && unzip chromedriver_linux64.zip \
+    && mv chromedriver /usr/local/bin/ \
+    && chmod +x /usr/local/bin/chromedriver \
+    && rm chromedriver_linux64.zip
 
-# Install Google Chrome
-RUN apt-get update && apt-get install -y google-chrome-stable && rm -rf /var/lib/apt/lists/*
+# Set Chromium path (if needed)
+ENV CHROME_BIN=/usr/bin/chromium
 
-# Manually set the ChromeDriver version (instead of dynamically fetching it)
-RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
-    wget -q https://chromedriver.storage.googleapis.com/${CHROME_VERSION}/chromedriver_linux64.zip && \
-    unzip chromedriver_linux64.zip && \
-    mv chromedriver /usr/local/bin/ && \
-    chmod +x /usr/local/bin/chromedriver && \
-    rm chromedriver_linux64.zip
-
-# Set the working directory in the container
+# Set up the rest of the application
 WORKDIR /app
-
-# Copy the application code to the container
 COPY . /app
+RUN pip install -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Expose the port the app runs on
+# Expose port and run the app
 EXPOSE 5000
-
-# Command to run the application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "ap:app"]
-
+CMD ["python", "app.py"]

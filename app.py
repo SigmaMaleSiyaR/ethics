@@ -145,6 +145,24 @@ def get_driver():
     options = Options()
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--headless")   # This hides the browser UI
+
+    # Check if we are running inside a container or locally
+    if os.getenv("IS_CONTAINER", "false").lower() == "true":
+        options.binary_location = '/usr/bin/chromium-browser'  # Path for container
+        service = Service('/usr/local/bin/chromedriver')
+    else:
+        options.binary_location = '/usr/bin/google-chrome'  # Path for local
+        service = Service(r"C:\Program Files\driver\chromedriver.exe")  # Windows path
+
+    logging.debug("Using chromium-browser at: %s", options.binary_location)
+    logging.debug("Using chromedriver at: %s", service.path)
+
+    return webdriver.Chrome(service=service, options=options)
+
+    options = Options()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     # addition of new commands
     options.add_argument("--headless")   #shows no visuals or ui of working of the script i.e no login is visible
 
@@ -169,6 +187,10 @@ def check_active_status(username, password):
         driver.find_element(By.NAME, "password").send_keys("\n")
         time.sleep(5)
 
+        # Check if login was successful
+        if "Instagram" not in driver.title:
+            return {"error": "Login failed. Please check credentials."}
+
         driver.get("https://www.instagram.com/direct/inbox/")
         time.sleep(5)
 
@@ -188,6 +210,7 @@ def check_active_status(username, password):
         return parser.parse_instagram_status(page_text, username)
 
     except Exception as e:
+        logging.error(f"Error occurred: {str(e)}")
         return {"error": str(e)}
     finally:
         driver.quit()
