@@ -141,7 +141,12 @@ def get_driver():
     options = Options()
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    service = Service(r"C:\Program Files\driver\chromedriver.exe")
+    # addition of new commands
+    options.add_argument("--headless")   #shows no visuals or ui of working of the script i.e no login is visible
+    options.binary_location = '/usr/bin/chromium-browser' 
+    service = Service('/usr/local/bin/chromedriver')
+    # upto here 
+    # service = Service(r"C:\Program Files\driver\chromedriver.exe")
     return webdriver.Chrome(service=service, options=options)
 
 def check_active_status(username, password):
