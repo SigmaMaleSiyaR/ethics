@@ -9,6 +9,9 @@ import time
 import re
 from datetime import datetime, timedelta
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 class InstagramStatusParser:
     def __init__(self):
@@ -144,6 +147,11 @@ def get_driver():
     options.add_argument("--disable-dev-shm-usage")
     # addition of new commands
     options.add_argument("--headless")   #shows no visuals or ui of working of the script i.e no login is visible
+
+    # Log paths
+    logging.debug("Using chromium-browser at: %s", options.binary_location)
+    logging.debug("Using chromedriver at: /usr/local/bin/chromedriver")
+
     options.binary_location = '/usr/bin/chromium-browser' 
     service = Service('/usr/local/bin/chromedriver')
     # upto here 
