@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Update package lists
-apt-get update
+# Update package manager and install Chromium browser
+apt-get update && apt-get install -y chromium-browser
 
-# Install Chrome
-apt-get install -y wget unzip chromium-browser
+# Download and install ChromeDriver
+wget https://chromedriver.storage.googleapis.com/$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
+unzip chromedriver_linux64.zip
+mv chromedriver /usr/local/bin/
+chmod +x /usr/local/bin/chromedriver
 
-# Install ChromeDriver
-CHROME_DRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip
-unzip /tmp/chromedriver.zip -d /usr/local/bin/
-rm /tmp/chromedriver.zip
+# Install Python dependencies
+pip install -r requirements.txt

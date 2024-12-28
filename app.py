@@ -8,6 +8,7 @@ from selenium import webdriver
 import time
 import re
 from datetime import datetime, timedelta
+import os
 
 class InstagramStatusParser:
     def __init__(self):
@@ -185,8 +186,8 @@ def check_active_status(username, password):
 
 @app.route('/')
 def home():
-    username = "rawat_chunnilal"
-    password = "Bit#1234"
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
     result = check_active_status(username, password)
     return jsonify(result)
 
