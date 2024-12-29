@@ -1,27 +1,48 @@
-version: "3"
+version: '3.8'
+
 services:
-  selenium-hub:
-    image: selenium/hub:4.13.0
+  flask-app:
+    build: .
+    container_name: flask-app
     ports:
-      - "4444:4444"
-      - "4442:4442"
-      - "4443:4443"
+      - "5000:5000"
     environment:
-      - GRID=true
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
+    depends_on:
+      - selenium-hub
     networks:
       - selenium-grid
 
-  selenium-node-chrome:
-    image: selenium/node-chrome:4.13.0
-    depends_on:
-      - selenium-hub
-    environment:
-      - HUB_HOST=selenium-hub
-      - HUB_PORT=4444
+  selenium-hub:
+    image: selenium/hub:4.13.0
+    container_name: selenium-hub
     ports:
-      - "5900:5900"  # Expose VNC port (optional)
+      - "4444:4444"
+      - "4442-4443:4442-4443"
     networks:
       - selenium-grid
+    environment:
+      - SE_NODE_MAX_SESSION=5
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_NODE_HUB_HOST=selenium-hub
+      - SE_NODE_HUB_PORT=4444
+
+  selenium-node-chrome:
+    image: selenium/node-chrome:4.13.0
+    container_name: selenium-node-chrome
+    ports:
+      - "5555:5555"
+    depends_on:
+      - selenium-hub
+    networks:
+      - selenium-grid
+    environment:
+      - SE_NODE_HUB_HOST=selenium-hub
+      - SE_NODE_HUB_PORT=4444
+      - SE_NODE_MAX_SESSION=5
+      - SE_NODE_SESSION_TIMEOUT=300
+      - CHROME_DRIVER_EXTRA_FLAGS=--no-sandbox,--headless,--disable-dev-shm-usage
 
 networks:
   selenium-grid:
