@@ -20,18 +20,23 @@ RUN apt-get update && apt-get install -y \
     libappindicator3-1 \
     libgdk-pixbuf2.0-0 \
     libdbus-glib-1-2 \
-    xdg-utils
+    xdg-utils \
+    && apt-get clean
 
-# Install the latest Chrome version
-RUN wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip
-RUN unzip chrome-linux64.zip -d /opt/ && rm chrome-linux64.zip
-
-# Set up ChromeDriver
-RUN wget https://chromedriver.storage.googleapis.com/131.0.6778.204/chromedriver_linux64.zip
-RUN unzip chromedriver_linux64.zip -d /usr/local/bin && rm chromedriver_linux64.zip
+# Install the latest Chrome version using the official link
+RUN wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip \
+    && unzip chrome-linux64.zip -d /opt/ \
+    && rm chrome-linux64.zip \
+    && mv /opt/chrome-linux64 /opt/google-chrome \
+    && chmod +x /opt/google-chrome/chrome
 
 # Set the working directory inside the container
 WORKDIR /app
+
+# Copy the ChromeDriver into the working directory 
+COPY chromedriver /app/chromedriver 
+# Make the copied ChromeDriver executable 
+RUN chmod +x /app/chromedriver
 
 # Copy the requirements file and install dependencies
 COPY requirements.txt /app/
